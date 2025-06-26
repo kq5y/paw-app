@@ -40,11 +40,14 @@
                             <a href="{{ app.https_url }}" target="_blank" class="card-link">HTTPS Link</a><br>
                             <a href="{{ app.url }}" target="_blank" class="card-link">HTTP Link</a>
                         </p>
-                        <div class="d-flex justify-content-end">
-                             <a href="{{ url_for('edit_app', app_name=app.name) }}" class="btn btn-outline-primary btn-sm me-2">編集</a>
-                             <form action="{{ url_for('delete_app', app_name=app.name) }}" method="post" onsubmit="return confirm('本当に削除しますか？');">
-                                 <button type="submit" class="btn btn-outline-danger btn-sm">削除</button>
-                             </form>
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('get_logs', app_name=app.name) }}" class="btn btn-outline-secondary btn-sm">ログを見る</a>
+                            <div>
+                                <a href="{{ url_for('edit_app', app_name=app.name) }}" class="btn btn-outline-primary btn-sm me-2">編集</a>
+                                <form action="{{ url_for('delete_app', app_name=app.name) }}" method="post" onsubmit="return confirm('本当に削除しますか？');" style="display: inline;">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">削除</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>

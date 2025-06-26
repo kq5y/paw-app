@@ -158,5 +158,15 @@ def delete_app(app_name):
         
     return redirect(url_for('index'))
 
+@app.route('/app/<app_name>/logs', methods=['GET'])
+def get_logs(app_name):
+    container_name = f"user-app-{app_name}"
+    try:
+        container = client.containers.get(container_name)
+        logs = container.logs(tail=100).decode('utf-8')
+        return render_template('logs.html', app_name=app_name, logs=logs)
+    except docker.errors.NotFound:
+        return "Container not found", 404
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
