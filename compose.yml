@@ -1,0 +1,40 @@
+services:
+  traefik:
+    image: "traefik:v3.4.1"
+    container_name: "traefik"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "./traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
+      - "./traefik/letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - web
+
+  dashboard:
+    build: ./dashboard
+    container_name: "dashboard"
+    restart: always
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./apps-code:/apps-code"
+    environment:
+      - BASE_DOMAIN=p.kq5.jp
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard-secure.rule=Host(`p.kq5.jp`)"
+      - "traefik.http.routers.dashboard-secure.entrypoints=websecure"
+      - "traefik.http.routers.dashboard-secure.tls.certresolver=myresolver"
+      - "traefik.http.services.dashboard-secure.loadbalancer.server.port=5000"
+      - "traefik.http.routers.dashboard.rule=Host(`p.kq5.jp`)"
+      - "traefik.http.routers.dashboard.entrypoints=web"
+      - "traefik.http.services.dashboard.loadbalancer.server.port=5000"
+    networks:
+      - web
+
+networks:
+  web:
+    driver: bridge
+    name: paw-web-network
