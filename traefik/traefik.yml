@@ -1,0 +1,20 @@
+api:
+  insecure: true
+  dashboard: true
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    exposedByDefault: false
+
+certificatesResolvers:
+  myresolver:
+    acme:
+      email: "contact+ssl@kq5.jp"
+      storage: "/letsencrypt/acme.json"
+      tlsChallenge: {}
