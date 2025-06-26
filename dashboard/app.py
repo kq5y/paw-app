@@ -1,7 +1,10 @@
 import os
-import docker
+import io
 import random
 import shutil
+import tarfile
+
+import docker
 from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
@@ -11,8 +14,7 @@ client = docker.from_env()
 BASE_DOMAIN = os.environ.get("BASE_DOMAIN", "localhost")
 APPS_CODE_DIR = "/apps-code"
 
-DEFAULT_APP_CODE = """
-from flask import Flask
+DEFAULT_APP_CODE = """from flask import Flask
 
 app = Flask(__name__)
 
@@ -25,13 +27,11 @@ if __name__ == '__main__':
 """
 
 def get_random_name():
-    """ユニークなアプリ名を生成"""
     adjectives = ['bright', 'cold', 'dark', 'great', 'high', 'little', 'new', 'old', 'shiny', 'young']
     nouns = ['river', 'sea', 'sky', 'sun', 'moon', 'star', 'tree', 'wind', 'fire', 'snow']
     return f"{random.choice(adjectives)}-{random.choice(nouns)}-{random.randint(100, 999)}"
 
 def get_apps():
-    """既存のアプリとコンテナの状態を取得"""
     apps = []
     running_containers = {c.name: c for c in client.containers.list(all=True)}
 
@@ -54,13 +54,11 @@ def get_apps():
 
 @app.route('/')
 def index():
-    """アプリ一覧ページ"""
     apps = get_apps()
     return render_template('index.html', apps=apps, base_domain=BASE_DOMAIN)
 
 @app.route('/new', methods=['POST'])
 def new_app():
-    """新しいアプリを作成"""
     app_name = get_random_name()
     app_path = os.path.join(APPS_CODE_DIR, app_name)
     os.makedirs(app_path)
@@ -73,7 +71,6 @@ def new_app():
 
 @app.route('/app/<app_name>/edit', methods=['GET', 'POST'])
 def edit_app(app_name):
-    """アプリのコードを編集"""
     app_py_path = os.path.join(APPS_CODE_DIR, app_name, 'app.py')
     if not os.path.exists(app_py_path):
         return "App not found", 404
@@ -91,7 +88,6 @@ def edit_app(app_name):
 
 
 def start_app_container(app_name):
-    """アプリのコンテナを起動"""
     container_name = f"user-app-{app_name}"
     app_host_path = os.path.abspath(os.path.join(APPS_CODE_DIR, app_name))
     
@@ -103,11 +99,9 @@ def start_app_container(app_name):
 
     labels = {
         "traefik.enable": "true",
-        "traefik.docker.network": "paw-web-network",
         f"traefik.http.routers.{app_name}-secure.rule": f"Host(`{app_name}.{BASE_DOMAIN}`)",
         f"traefik.http.routers.{app_name}-secure.entrypoints": "websecure",
         f"traefik.http.routers.{app_name}-secure.tls.certresolver": "myresolver",
-        f"traefik.http.services.{app_name}-secure.loadbalancer.server.port": "5000",
         f"traefik.http.routers.{app_name}.rule": f"Host(`{app_name}.{BASE_DOMAIN}`)",
         f"traefik.http.routers.{app_name}.entrypoints": "web",
         f"traefik.http.services.{app_name}.loadbalancer.server.port": "5000",
@@ -116,27 +110,41 @@ def start_app_container(app_name):
     command = [
         "/bin/sh",
         "-c",
-        "pip install Flask gunicorn && gunicorn --bind 0.0.0.0:5000 user-app.app:app"
+        "pip install Flask gunicorn && gunicorn --bind 0.0.0.0:5000 app:app"
     ]
     
-    client.containers.run(
+    container = client.containers.create(
         image="python:3.10-slim",
         name=container_name,
         command=command,
         working_dir="/user-app",
-        volumes={app_host_path: {'bind': '/user-app', 'mode': 'rw'}},
         labels=labels,
         network="paw-web-network",
         detach=True,
         restart_policy={"Name": "always"}
     )
 
+    network = client.networks.get("paw-web-network")
+    network.connect(container)
+
+    def make_tarfile(src_dir):
+        tar_stream = io.BytesIO()
+        with tarfile.open(fileobj=tar_stream, mode='w') as tar:
+            for filename in os.listdir(src_dir):
+                filepath = os.path.join(src_dir, filename)
+                tar.add(filepath, arcname=filename)
+        tar_stream.seek(0)
+        return tar_stream
+    
+    container.put_archive('/user-app', data=make_tarfile(app_host_path))
+    
+    container.start()
+
 def restart_app_container(app_name):
     start_app_container(app_name)
 
 @app.route('/app/<app_name>/delete', methods=['POST'])
 def delete_app(app_name):
-    """アプリとコンテナを削除"""
     container_name = f"user-app-{app_name}"
     try:
         container = client.containers.get(container_name)
