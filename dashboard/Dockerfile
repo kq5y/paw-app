@@ -2,7 +2,7 @@ FROM python:3.10-slim
 
 WORKDIR /dashboard
 
-RUN pip install Flask docker gunicorn
+RUN pip install Flask docker gunicorn requests
 
 COPY . .
 
