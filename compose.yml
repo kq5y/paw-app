@@ -29,8 +29,6 @@ services:
       - "traefik.http.routers.dashboard-secure.tls.certresolver=myresolver"
       - "traefik.http.routers.dashboard.rule=Host(`p.kq5.jp`)"
       - "traefik.http.routers.dashboard.entrypoints=web"
-      - "traefik.http.routers.dashboard.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.services.dashboard.loadbalancer.server.port=5000"
     networks:
       - web
