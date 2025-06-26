@@ -27,7 +27,7 @@ services:
       - "traefik.http.routers.dashboard-secure.rule=Host(`p.kq5.jp`)"
       - "traefik.http.routers.dashboard-secure.entrypoints=websecure"
       - "traefik.http.routers.dashboard-secure.tls.certresolver=myresolver"
-      - "traefik.http.services.dashboard-secure.loadbalancer.server.port=5000"
+      - "traefik.http.services.dashboard.loadbalancer.server.port=5000"
       - "traefik.http.routers.dashboard.rule=Host(`p.kq5.jp`)"
       - "traefik.http.routers.dashboard.entrypoints=web"
       - "traefik.http.services.dashboard.loadbalancer.server.port=5000"
