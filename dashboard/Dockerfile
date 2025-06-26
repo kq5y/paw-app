@@ -6,4 +6,4 @@ RUN pip install Flask docker gunicorn
 
 COPY . .
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "dashboard.app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
