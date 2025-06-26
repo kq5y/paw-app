@@ -116,7 +116,7 @@ def start_app_container(app_name):
     command = [
         "/bin/sh",
         "-c",
-        "pip install Flask gunicorn && gunicorn --bind 0.0.0.0:5000 app:app"
+        "pip install Flask gunicorn && gunicorn --bind 0.0.0.0:5000 user-app.app:app"
     ]
     
     client.containers.run(
