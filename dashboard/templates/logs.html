@@ -12,6 +12,7 @@
         <div class="mb-3">
             <textarea class="form-control" id="logs" rows="15" style="font-family: monospace;" readonly>{{ logs }}</textarea>
         </div>
+        <button onclick="location.reload()" class="btn btn-primary ms-2">再読み込み</button>
         <a href="{{ url_for('index') }}" class="btn btn-secondary">戻る</a>
     </div>
 </body>
