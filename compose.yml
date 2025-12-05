@@ -12,7 +12,7 @@ services:
     environment:
       - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
     networks:
-      - web
+      - paw-apps-net
 
   dashboard:
     build: ./dashboard
@@ -24,7 +24,7 @@ services:
     environment:
       - BASE_DOMAIN=${BASE_DOMAIN}
     networks:
-      - web
+      - paw-mgmt-net
 
   tunnel:
     image: cloudflare/cloudflared:latest
@@ -34,7 +34,7 @@ services:
     environment:
       - TUNNEL_TOKEN=${TUNNEL_TOKEN}
     networks:
-      - web
+      - paw-mgmt-net
 
   app-base:
     build: ./app-base
@@ -44,6 +44,9 @@ services:
     restart: "no"
 
 networks:
-  web:
+  paw-mgmt-net:
     driver: bridge
-    name: paw-web-network
+    name: paw-mgmt-net
+  paw-apps-net:
+    driver: bridge
+    name: paw-apps-net

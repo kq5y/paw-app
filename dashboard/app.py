@@ -137,12 +137,19 @@ def start_app_container(app_name):
         command=command,
         working_dir="/user-app",
         labels=labels,
-        network="paw-web-network",
+        network="paw-apps-net",
         detach=True,
-        restart_policy={"Name": "always"}
+        restart_policy={"Name": "always"},
+        pids_limit=50,
+        read_only=True,
+        tmpfs={
+            '/tmp': '',
+            '/user-app': ''
+        },
+        security_opt=['no-new-privileges']
     )
 
-    network = client.networks.get("paw-web-network")
+    network = client.networks.get("paw-apps-net")
     network.connect(container)
 
     def make_tarfile(src_dir):
