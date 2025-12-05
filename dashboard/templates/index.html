@@ -15,9 +15,7 @@
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Python App Dashboard</h1>
-            <form action="{{ url_for('new_app') }}" method="post">
-                <button type="submit" class="btn btn-success">新規アプリを作成</button>
-            </form>
+            <a href="{{ url_for('new_app') }}" class="btn btn-success">新規アプリを作成</a>
         </div>
 
         <div class="row">

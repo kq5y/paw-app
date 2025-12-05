@@ -1,5 +1,6 @@
 import os
 import io
+import re
 import random
 import shutil
 import tarfile
@@ -57,13 +58,27 @@ def index():
     apps = get_apps()
     return render_template('index.html', apps=apps, base_domain=BASE_DOMAIN)
 
-@app.route('/new', methods=['POST'])
+@app.route('/new', methods=['GET', 'POST'])
 def new_app():
-    app_name = get_random_name()
+    if request.method == 'GET':
+        return render_template('create.html', code=DEFAULT_APP_CODE)
+    
+    app_name = request.form.get('app_name', '').strip()
+    code = request.form.get('code')
+
+    if not app_name:
+        app_name = get_random_name()
+    else:
+        if not re.match(r'^[a-z0-9-]+$', app_name):
+            return "Invalid app name. Use only lowercase letters, numbers, and hyphens.", 400
+        if os.path.exists(os.path.join(APPS_CODE_DIR, app_name)):
+            return f"App '{app_name}' already exists. Please choose a different name.", 400
+    
     app_path = os.path.join(APPS_CODE_DIR, app_name)
     os.makedirs(app_path)
+
     with open(os.path.join(app_path, 'app.py'), 'w') as f:
-        f.write(DEFAULT_APP_CODE)
+        f.write(code)
     
     start_app_container(app_name)
     
