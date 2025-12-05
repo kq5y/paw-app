@@ -1,7 +1,3 @@
-api:
-  insecure: true
-  dashboard: true
-
 entryPoints:
   web:
     address: ":80"
@@ -17,4 +13,6 @@ certificatesResolvers:
     acme:
       email: "contact+ssl@kq5.jp"
       storage: "/letsencrypt/acme.json"
-      tlsChallenge: {}
+      dnsChallenge:
+        provider: cloudflare
+        delayBeforeCheck: 0
