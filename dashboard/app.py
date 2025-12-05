@@ -28,8 +28,8 @@ if __name__ == '__main__':
 """
 
 def get_random_name():
-    adjectives = ['bright', 'cold', 'dark', 'great', 'high', 'little', 'new', 'old', 'shiny', 'young']
-    nouns = ['river', 'sea', 'sky', 'sun', 'moon', 'star', 'tree', 'wind', 'fire', 'snow']
+    adjectives = ["bright", "cold", "dark", "great", "high", "little", "new", "old", "shiny", "young"]
+    nouns = ["river", "sea", "sky", "sun", "moon", "star", "tree", "wind", "fire", "snow"]
     return f"{random.choice(adjectives)}-{random.choice(nouns)}-{random.randint(100, 999)}"
 
 def get_apps():
@@ -56,20 +56,20 @@ def get_apps():
 @app.route('/')
 def index():
     apps = get_apps()
-    return render_template('index.html', apps=apps, base_domain=BASE_DOMAIN)
+    return render_template("index.html", apps=apps, base_domain=BASE_DOMAIN)
 
-@app.route('/new', methods=['GET', 'POST'])
+@app.route("/new", methods=["GET", "POST"])
 def new_app():
-    if request.method == 'GET':
-        return render_template('new.html', code=DEFAULT_APP_CODE)
+    if request.method == "GET":
+        return render_template("new.html", code=DEFAULT_APP_CODE)
     
-    app_name = request.form.get('app_name', '').strip()
-    code = request.form.get('code')
+    app_name = request.form.get("app_name", "").strip()
+    code = request.form.get("code")
 
     if not app_name:
         app_name = get_random_name()
     else:
-        if not re.match(r'^[a-z0-9-]+$', app_name):
+        if not re.match(r"^[a-z0-9-]+$", app_name):
             return "Invalid app name. Use only lowercase letters, numbers, and hyphens.", 400
         if os.path.exists(os.path.join(APPS_CODE_DIR, app_name)):
             return f"App '{app_name}' already exists. Please choose a different name.", 400
@@ -77,29 +77,29 @@ def new_app():
     app_path = os.path.join(APPS_CODE_DIR, app_name)
     os.makedirs(app_path)
 
-    with open(os.path.join(app_path, 'app.py'), 'w') as f:
+    with open(os.path.join(app_path, "app.py"), "w") as f:
         f.write(code)
     
     start_app_container(app_name)
     
-    return redirect(url_for('index'))
+    return redirect(url_for("index"))
 
-@app.route('/app/<app_name>/edit', methods=['GET', 'POST'])
+@app.route("/app/<app_name>/edit", methods=["GET", "POST"])
 def edit_app(app_name):
-    app_py_path = os.path.join(APPS_CODE_DIR, app_name, 'app.py')
+    app_py_path = os.path.join(APPS_CODE_DIR, app_name, "app.py")
     if not os.path.exists(app_py_path):
         return "App not found", 404
 
-    if request.method == 'POST':
-        code = request.form['code']
-        with open(app_py_path, 'w') as f:
+    if request.method == "POST":
+        code = request.form["code"]
+        with open(app_py_path, "w") as f:
             f.write(code)
         restart_app_container(app_name)
-        return redirect(url_for('index'))
+        return redirect(url_for("index"))
 
-    with open(app_py_path, 'r') as f:
+    with open(app_py_path, "r") as f:
         code = f.read()
-    return render_template('edit.html', app_name=app_name, code=code)
+    return render_template("edit.html", app_name=app_name, code=code)
 
 
 def start_app_container(app_name):
@@ -132,8 +132,8 @@ def start_app_container(app_name):
     ]
 
     mounts = [
-        docker.types.Mount(target='/user-app', source=None, type='volume'),
-        docker.types.Mount(target='/tmp', source=None, type='tmpfs'),
+        docker.types.Mount(target="/user-app", source=None, type="volume"),
+        docker.types.Mount(target="/tmp", source=None, type="tmpfs"),
     ]
     
     container = client.containers.create(
@@ -148,7 +148,7 @@ def start_app_container(app_name):
         pids_limit=50,
         read_only=True,
         mounts=mounts,
-        security_opt=['no-new-privileges']
+        security_opt=["no-new-privileges"]
     )
 
     network = client.networks.get("paw-apps-net")
@@ -156,21 +156,21 @@ def start_app_container(app_name):
 
     def make_tarfile(src_dir):
         tar_stream = io.BytesIO()
-        with tarfile.open(fileobj=tar_stream, mode='w') as tar:
+        with tarfile.open(fileobj=tar_stream, mode="w") as tar:
             for filename in os.listdir(src_dir):
                 filepath = os.path.join(src_dir, filename)
                 tar.add(filepath, arcname=filename)
         tar_stream.seek(0)
         return tar_stream
     
-    container.put_archive('/user-app', data=make_tarfile(app_host_path))
+    container.put_archive("/user-app", data=make_tarfile(app_host_path))
     
     container.start()
 
 def restart_app_container(app_name):
     start_app_container(app_name)
 
-@app.route('/app/<app_name>/delete', methods=['POST'])
+@app.route("/app/<app_name>/delete", methods=["POST"])
 def delete_app(app_name):
     container_name = f"user-app-{app_name}"
     try:
@@ -183,13 +183,13 @@ def delete_app(app_name):
     if os.path.exists(app_path):
         shutil.rmtree(app_path)
         
-    return redirect(url_for('index'))
+    return redirect(url_for("index"))
 
-@app.route('/app/<app_name>/logs', methods=['GET'])
+@app.route("/app/<app_name>/logs", methods=["GET"])
 def get_logs(app_name):
-    return render_template('logs.html', app_name=app_name)
+    return render_template("logs.html", app_name=app_name)
 
-@app.route('/app/<app_name>/logs/stream', methods=['GET'])
+@app.route("/app/<app_name>/logs/stream", methods=["GET"])
 def stream_logs(app_name):
     container_name = f"user-app-{app_name}"
     try:
@@ -197,9 +197,17 @@ def stream_logs(app_name):
         def generate():
             for line in container.logs(stream=True, tail=100, follow=True):
                 yield line
-        return Response(stream_with_context(generate()), mimetype='text/plain')
+        return Response(
+            stream_with_context(generate()),
+            mimetype="text/plain",
+            headers={
+                "X-Accel-Buffering": "no",
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive"
+            }
+        )
     except docker.errors.NotFound:
         return "Container not found", 404
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
