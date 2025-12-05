@@ -107,15 +107,17 @@ def start_app_container(app_name):
         f"traefik.http.routers.{app_name}.entrypoints": "web",
         f"traefik.http.services.{app_name}.loadbalancer.server.port": "5000",
     }
-    
+
     command = [
-        "/bin/sh",
-        "-c",
-        "pip install Flask gunicorn requests && gunicorn --bind 0.0.0.0:5000 --access-logfile - --error-logfile - app:app"
+        "gunicorn",
+        "--bind", "0.0.0.0:5000",
+        "--access-logfile", "-",
+        "--error-logfile", "-",
+        "app:app"
     ]
     
     container = client.containers.create(
-        image="python:3.10-slim",
+        image="paw-user-app:latest",
         name=container_name,
         command=command,
         working_dir="/user-app",

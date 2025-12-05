@@ -36,6 +36,13 @@ services:
     networks:
       - web
 
+  app-base:
+    build: ./app-base
+    image: paw-user-app:latest
+    container_name: paw-user-base
+    command: "true"
+    restart: "no"
+
 networks:
   web:
     driver: bridge
