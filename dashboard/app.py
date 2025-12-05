@@ -108,7 +108,7 @@ def start_app_container(app_name):
     
     try:
         old_container = client.containers.get(container_name)
-        old_container.remove(force=True)
+        old_container.remove(force=True, v=True)
     except docker.errors.NotFound:
         pass
 
@@ -130,6 +130,11 @@ def start_app_container(app_name):
         "--error-logfile", "-",
         "app:app"
     ]
+
+    mounts = [
+        docker.types.Mount(target='/user-app', source=None, type='volume'),
+        docker.types.Mount(target='/tmp', source=None, type='tmpfs'),
+    ]
     
     container = client.containers.create(
         image="paw-user-app:latest",
@@ -142,10 +147,7 @@ def start_app_container(app_name):
         restart_policy={"Name": "always"},
         pids_limit=50,
         read_only=True,
-        tmpfs={
-            '/tmp': '',
-            '/user-app': ''
-        },
+        mounts=mounts,
         security_opt=['no-new-privileges']
     )
 
