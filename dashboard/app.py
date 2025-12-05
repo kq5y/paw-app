@@ -102,6 +102,7 @@ def start_app_container(app_name):
         f"traefik.http.routers.{app_name}-secure.rule": f"Host(`{app_name}.{BASE_DOMAIN}`)",
         f"traefik.http.routers.{app_name}-secure.entrypoints": "websecure",
         f"traefik.http.routers.{app_name}-secure.tls.certresolver": "myresolver",
+        f"traefik.http.routers.{app_name}-secure.tls.domains[0].main": f"*.{BASE_DOMAIN}",
         f"traefik.http.routers.{app_name}.rule": f"Host(`{app_name}.{BASE_DOMAIN}`)",
         f"traefik.http.routers.{app_name}.entrypoints": "web",
         f"traefik.http.services.{app_name}.loadbalancer.server.port": "5000",

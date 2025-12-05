@@ -8,14 +8,6 @@ providers:
   docker:
     exposedByDefault: false
 
-tls:
-  stores:
-    default:
-      defaultGeneratedCert:
-        resolver: myresolver
-        domain:
-          main: "*.p.kq5.jp"
-
 certificatesResolvers:
   myresolver:
     acme:
