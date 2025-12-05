@@ -5,7 +5,7 @@ import shutil
 import tarfile
 
 import docker
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, Response, stream_with_context
 
 app = Flask(__name__)
 
@@ -163,11 +163,17 @@ def delete_app(app_name):
 
 @app.route('/app/<app_name>/logs', methods=['GET'])
 def get_logs(app_name):
+    return render_template('logs.html', app_name=app_name)
+
+@app.route('/app/<app_name>/logs/stream', methods=['GET'])
+def stream_logs(app_name):
     container_name = f"user-app-{app_name}"
     try:
         container = client.containers.get(container_name)
-        logs = container.logs(tail=100).decode('utf-8')
-        return render_template('logs.html', app_name=app_name, logs=logs)
+        def generate():
+            for line in container.logs(stream=True, tail=100, follow=True):
+                yield line
+        return Response(stream_with_context(generate()), mimetype='text/plain')
     except docker.errors.NotFound:
         return "Container not found", 404
 

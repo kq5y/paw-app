@@ -10,10 +10,39 @@
     <div class="container mt-5">
         <h2>Logs for: <span class="text-primary">{{ app_name }}</span></h2>
         <div class="mb-3">
-            <textarea class="form-control" id="logs" rows="15" style="font-family: monospace;" readonly>{{ logs }}</textarea>
+            <textarea class="form-control" id="logs" rows="15" style="font-family: monospace;" readonly></textarea>
         </div>
         <button onclick="location.reload()" class="btn btn-primary ms-2">再読み込み</button>
         <a href="{{ url_for('index') }}" class="btn btn-secondary">戻る</a>
     </div>
+    <script>
+        const appName = "{{ app_name }}";
+        const logsElement = document.getElementById('logs');
+        const streamUrl = `/app/${appName}/logs/stream`;
+
+        async function fetchLogs() {
+            try {
+                const response = await fetch(streamUrl);
+                if (!response.body) {
+                    logsElement.value += "Streaing not supported or failed.\n";
+                    return;
+                }
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    logsElement.value += decoder.decode(value, { stream: true });
+                    logsElement.scrollTop = logsElement.scrollHeight;
+                }
+            } catch (error) {
+                console.error("Error fetching logs:", error);
+                logsElement.value += `\n[Error] Connection lost: ${error}`;
+            }
+        }
+
+        fetchLogs();
+    </script>
 </body>
 </html>
