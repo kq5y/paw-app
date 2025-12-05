@@ -61,7 +61,7 @@ def index():
 @app.route('/new', methods=['GET', 'POST'])
 def new_app():
     if request.method == 'GET':
-        return render_template('create.html', code=DEFAULT_APP_CODE)
+        return render_template('new.html', code=DEFAULT_APP_CODE)
     
     app_name = request.form.get('app_name', '').strip()
     code = request.form.get('code')
