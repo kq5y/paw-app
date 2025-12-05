@@ -1,7 +1,7 @@
 services:
   traefik:
     image: "traefik:v3.6"
-    container_name: "traefik"
+    container_name: "paw-traefik"
     ports:
       - "80:80"
       - "443:443"
@@ -16,7 +16,7 @@ services:
 
   dashboard:
     build: ./dashboard
-    container_name: "dashboard"
+    container_name: "paw-dashboard"
     restart: always
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
@@ -28,7 +28,7 @@ services:
 
   tunnel:
     image: cloudflare/cloudflared:latest
-    container_name: "tunnel"
+    container_name: "paw-tunnel"
     restart: always
     command: tunnel --no-autoupdate run
     environment:
