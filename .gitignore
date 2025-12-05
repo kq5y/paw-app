@@ -3,3 +3,5 @@ apps-code/*
 
 traefik/letsencrypt/*
 !traefik/letsencrypt/.gitkeep
+
+.env

@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: "traefik:v3.4.1"
+    image: "traefik:v3.6"
     container_name: "traefik"
     ports:
       - "80:80"
@@ -20,15 +20,17 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./apps-code:/apps-code"
     environment:
-      - BASE_DOMAIN=p.kq5.jp
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.dashboard-secure.rule=Host(`p.kq5.jp`)"
-      - "traefik.http.routers.dashboard-secure.entrypoints=websecure"
-      - "traefik.http.routers.dashboard-secure.tls.certresolver=myresolver"
-      - "traefik.http.routers.dashboard.rule=Host(`p.kq5.jp`)"
-      - "traefik.http.routers.dashboard.entrypoints=web"
-      - "traefik.http.services.dashboard.loadbalancer.server.port=5000"
+      - BASE_DOMAIN=${BASE_DOMAIN}
+    networks:
+      - web
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: "tunnel"
+    restart: always
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
     networks:
       - web
 
