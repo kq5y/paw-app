@@ -170,6 +170,32 @@ def start_app_container(app_name):
 def restart_app_container(app_name):
     start_app_container(app_name)
 
+@app.route("/app/<app_name>/stop", methods=["POST"])
+def stop_app(app_name):
+    container_name = f"user-app-{app_name}"
+    try:
+        container = client.containers.get(container_name)
+        container.reload()
+        if container.status == "running":
+            container.stop()
+    except docker.errors.NotFound:
+        pass
+
+    return redirect(url_for("index"))
+
+@app.route("/app/<app_name>/start", methods=["POST"])
+def start_app(app_name):
+    container_name = f"user-app-{app_name}"
+    try:
+        container = client.containers.get(container_name)
+        container.reload()
+        if container.status != "running":
+            container.start()
+    except docker.errors.NotFound:
+        start_app_container(app_name)
+
+    return redirect(url_for("index"))
+
 @app.route("/app/<app_name>/delete", methods=["POST"])
 def delete_app(app_name):
     container_name = f"user-app-{app_name}"
